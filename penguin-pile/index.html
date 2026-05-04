@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lena Studio — One-minute games, made with care.</title>
+<meta name="description" content="Lena Studio is an indie game studio making small, snappy games you can play in one minute. Based in Seoul." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F2ECDF;
+    --ink: #14140F;
+    --ink-soft: #4A4A40;
+    --accent: #FF3A1F;
+    --line: #14140F;
+    --card-1: #B7DDC2;
+    --card-2: #FFB58A;
+    --card-3: #D8D2C2;
+    --display: 'Bricolage Grotesque', 'Helvetica Neue', sans-serif;
+    --body: 'Fraunces', Georgia, serif;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.5;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── grain overlay ────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  .container {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ── nav ──────────────────────────────────── */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 18px 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav .row {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .logo {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    text-transform: none;
+  }
+  .logo span { color: var(--accent); }
+  nav ul { list-style: none; display: flex; gap: 28px; }
+  nav a { color: var(--ink); text-decoration: none; transition: color .2s; }
+  nav a:hover { color: var(--accent); }
+  .pulse {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    display: inline-block; margin-right: 6px;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .4; transform: scale(.8); }
+  }
+
+  /* ── hero ─────────────────────────────────── */
+  .hero {
+    padding: 100px 0 80px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+  .hero .meta {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 60px;
+    display: flex; gap: 32px; flex-wrap: wrap;
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(60px, 11vw, 180px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    margin-bottom: 40px;
+  }
+  .hero h1 .ital {
+    font-family: var(--body);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+  .hero h1 .arrow {
+    display: inline-block;
+    transform: translateY(-0.08em);
+    color: var(--accent);
+  }
+  .hero .lede {
+    max-width: 560px;
+    font-size: 20px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin-left: auto;
+  }
+
+  /* ── marquee ──────────────────────────────── */
+  .marquee {
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 22px 0;
+  }
+  .marquee-track {
+    display: flex;
+    white-space: nowrap;
+    animation: scroll 28s linear infinite;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+  }
+  .marquee-track span { padding: 0 28px; display: inline-flex; align-items: center; gap: 28px; }
+  .marquee-track .star { color: var(--bg); }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ── section heads ────────────────────────── */
+  .section-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 80px;
+    margin-bottom: 48px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .section-head h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(40px, 6vw, 84px);
+    letter-spacing: -0.03em;
+    text-transform: none;
+    line-height: 1;
+  }
+  .section-head .num { color: var(--ink-soft); }
+
+  /* ── works grid ───────────────────────────── */
+  .works {
+    padding-bottom: 80px;
+    border-bottom: 1px solid var(--line);
+  }
+  .works-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .work {
+    cursor: pointer;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1);
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+  .work:hover { transform: translateY(-6px); }
+  .work-art {
+    aspect-ratio: 4 / 5;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 18px;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1);
+  }
+  .work-1 .work-art { background: var(--card-1); }
+  .work-2 .work-art { background: var(--card-2); }
+  .work-3 .work-art { background: var(--card-3); }
+
+  /* card 1: stacked penguins (circles + triangles) */
+  .work-1 .work-art::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 30%;
+    width: 110px; height: 110px;
+    background: var(--ink);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow:
+      -90px 90px 0 -10px var(--ink),
+      90px 90px 0 -10px var(--ink);
+  }
+  .work-1 .work-art::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 30%;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+  }
+
+  /* card 2: bouncing toast (square + curve) */
+  .work-2 .work-art::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 130px; height: 110px;
+    background: var(--ink);
+    transform: translate(-50%, -50%) rotate(-8deg);
+    border-radius: 18px 18px 6px 6px;
+    box-shadow: 0 8px 0 var(--accent);
+  }
+  .work-2 .work-art::after {
+    content: '';
+    position: absolute;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%);
+    width: 60%; height: 4px;
+    background: var(--ink);
+    border-radius: 50%;
+    opacity: 0.4;
+  }
+
+  /* card 3: coming soon (plus marks) */
+  .work-3 .work-art {
+    background-image:
+      linear-gradient(var(--ink) 2px, transparent 2px),
+      linear-gradient(90deg, var(--ink) 2px, transparent 2px);
+    background-size: 40px 40px;
+    background-position: -1px -1px;
+    background-color: var(--card-3);
+  }
+  .work-3 .work-art::before {
+    content: 'TBA';
+    position: absolute;
+    inset: 0;
+    display: grid; place-items: center;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 56px;
+    color: var(--ink);
+    letter-spacing: -0.04em;
+  }
+
+  .work-info {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  .work-info h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+  }
+  .work-info .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .work-desc {
+    margin-top: 10px;
+    font-size: 15px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* ── about ────────────────────────────────── */
+  .about {
+    padding: 80px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .about-grid .label {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+  }
+  .about-text {
+    font-size: 22px;
+    line-height: 1.5;
+  }
+  .about-text p + p { margin-top: 22px; }
+  .about-text .highlight {
+    background: var(--accent);
+    color: var(--bg);
+    padding: 0 8px;
+    font-style: italic;
+  }
+
+  /* ── contact ──────────────────────────────── */
+  .contact {
+    padding: 100px 0 80px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .contact .small {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 32px;
+  }
+  .contact h2 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(48px, 9vw, 140px);
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    margin-bottom: 40px;
+  }
+  .contact a.mail {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 8px;
+    transition: color .2s;
+  }
+  .contact a.mail:hover { color: var(--ink); }
+  .links {
+    display: flex; justify-content: center; gap: 32px;
+    margin-top: 50px;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .links a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 4px;
+    transition: color .2s, border-color .2s;
+  }
+  .links a:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── footer ───────────────────────────────── */
+  footer {
+    padding: 32px 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  footer .row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+
+  /* ── reveal animation ─────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity .8s ease, transform .8s ease;
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* ── responsive ───────────────────────────── */
+  @media (max-width: 900px) {
+    .container { padding: 0 22px; }
+    .hero { padding: 60px 0 50px; }
+    .hero .meta { gap: 16px; margin-bottom: 36px; }
+    .hero .lede { margin-left: 0; font-size: 17px; }
+    .works-grid { grid-template-columns: 1fr; gap: 40px; }
+    .work-art { aspect-ratio: 5 / 4; }
+    .about-grid { grid-template-columns: 1fr; gap: 32px; }
+    .about-text { font-size: 18px; }
+    .marquee-track { font-size: 22px; }
+    nav ul { gap: 16px; }
+    nav ul li:nth-child(2) { display: none; }
+    .section-head { padding-top: 50px; margin-bottom: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container row">
+    <div class="logo">Lena<span>.</span> Studio</div>
+    <ul>
+      <li><a href="#works">Works</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div><span class="pulse"></span> open for collab</div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="meta reveal">
+      <span>◷ Est. 2025 · Seoul</span>
+      <span>Indie Game Studio</span>
+      <span>Hyper-Casual</span>
+    </div>
+    <h1 class="reveal">
+      One-minute<br>
+      games, made<br>
+      <span class="ital">with care</span> <span class="arrow">↘</span>
+    </h1>
+    <p class="lede reveal">
+      We design small, snappy games you can pick up in one tap and finish before your coffee cools.
+      Built solo, shipped honestly, polished until they hum.
+    </p>
+  </div>
+</header>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>★ Now Playing</span><span class="star">·</span>
+    <span>One-Minute Games</span><span class="star">·</span>
+    <span>Tap. Play. Smile.</span><span class="star">·</span>
+    <span>Made in Seoul</span><span class="star">·</span>
+    <span>★ Now Playing</span><span class="star">·</span>
+    <span>One-Minute Games</span><span class="star">·</span>
+    <span>Tap. Play. Smile.</span><span class="star">·</span>
+    <span>Made in Seoul</span><span class="star">·</span>
+  </div>
+</div>
+
+<section class="works" id="works">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Selected Works</h2>
+      <span class="num">— 01 / 03 —</span>
+    </div>
+
+    <div class="works-grid">
+      <a href="./penguin-pile/" class="work work-1 reveal">
+        <div class="work-art" role="img" aria-label="Penguin Pile cover art"></div>
+        <div class="work-info">
+          <h3>Penguin Pile</h3>
+          <span class="tag">▶ Play now · Web</span>
+        </div>
+        <p class="work-desc">Stack penguins. Don't let them fall. Ridiculously hard, ridiculously fun.</p>
+      </a>
+
+      <article class="work work-2 reveal">
+        <div class="work-art" role="img" aria-label="Tap Tap Toast cover art"></div>
+        <div class="work-info">
+          <h3>Tap Tap Toast</h3>
+          <span class="tag">Coming Soon</span>
+        </div>
+        <p class="work-desc">A timing game where you cook breakfast for the universe. Don't burn it.</p>
+      </article>
+
+      <article class="work work-3 reveal">
+        <div class="work-art" role="img" aria-label="Untitled project, coming soon"></div>
+        <div class="work-info">
+          <h3>Untitled, 2026</h3>
+          <span class="tag">In Development</span>
+        </div>
+        <p class="work-desc">Something quiet, something cozy. More soon.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>About</h2>
+      <span class="num">— 02 / 03 —</span>
+    </div>
+
+    <div class="about-grid">
+      <div class="label reveal">Studio Note</div>
+      <div class="about-text reveal">
+        <p>
+          Lena Studio is a one-person indie outfit based in Seoul, focused on
+          <span class="highlight">small games that respect your time</span>.
+          We make things that are easy to start, hard to put down, and never ask you to grind.
+        </p>
+        <p>
+          The studio was founded by a backend developer who got tired of building
+          dashboards and started building toys. Every game ships with the same question
+          in mind: <em>does this make someone smile in 60 seconds or less?</em>
+        </p>
+        <p>
+          Currently a team of one. Open to collaboration with artists, audio designers,
+          and other indies who like making things small and well.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="small reveal">— 03 / 03 — Get in Touch</div>
+    <h2 class="reveal">Say hi.<br>Make a game.</h2>
+    <p class="reveal" style="font-size: 22px; margin-bottom: 8px;">
+      <a class="mail" href="mailto:asjs11@naver.com">asjs11@naver.com</a>
+    </p>
+    <div class="links reveal">
+      <a href="https://github.com/yesrin" target="_blank" rel="noopener">GitHub ↗</a>
+      <a href="https://www.linkedin.com/in/yesrin/" target="_blank" rel="noopener">LinkedIn ↗</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container row">
+    <div>© 2026 Lena Studio. All rights reserved.</div>
+    <div>Designed & built solo · Seoul, KR</div>
+  </div>
+</footer>
+
+<script>
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Stagger reveal for hero
+  document.querySelectorAll('.hero .reveal').forEach((el, i) => {
+    el.style.transitionDelay = (i * 120) + 'ms';
+  });
+  // Stagger reveal for work cards
+  document.querySelectorAll('.works-grid .reveal').forEach((el, i) => {
+    el.style.transitionDelay = (i * 150) + 'ms';
+  });
+</script>
+
+</body>
+</html>
