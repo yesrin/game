@@ -26,9 +26,7 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   html { scroll-behavior: smooth; }
-
   body {
     background: var(--bg);
     color: var(--ink);
@@ -39,7 +37,6 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ── grain overlay ────────────────────────── */
   body::before {
     content: '';
     position: fixed; inset: 0;
@@ -50,13 +47,9 @@
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   }
 
-  .container {
-    max-width: 1320px;
-    margin: 0 auto;
-    padding: 0 32px;
-  }
+  .container { max-width: 1320px; margin: 0 auto; padding: 0 32px; }
 
-  /* ── nav ──────────────────────────────────── */
+  /* nav */
   nav {
     position: sticky; top: 0; z-index: 50;
     background: var(--bg);
@@ -67,16 +60,8 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
-  nav .row {
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .logo {
-    font-family: var(--display);
-    font-weight: 800;
-    font-size: 18px;
-    letter-spacing: -0.02em;
-    text-transform: none;
-  }
+  nav .row { display: flex; justify-content: space-between; align-items: center; }
+  .logo { font-family: var(--display); font-weight: 800; font-size: 18px; letter-spacing: -0.02em; text-transform: none; }
   .logo span { color: var(--accent); }
   nav ul { list-style: none; display: flex; gap: 28px; }
   nav a { color: var(--ink); text-decoration: none; transition: color .2s; }
@@ -92,108 +77,85 @@
     50% { opacity: .4; transform: scale(.8); }
   }
 
-  /* ── hero ─────────────────────────────────── */
-  .hero {
-    padding: 100px 0 80px;
-    border-bottom: 1px solid var(--line);
-    position: relative;
+  /* hero */
+  .hero { padding: 80px 0 70px; border-bottom: 1px solid var(--line); }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 60px;
+    align-items: center;
   }
   .hero .meta {
     font-family: var(--mono);
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-bottom: 60px;
+    margin-bottom: 48px;
     display: flex; gap: 32px; flex-wrap: wrap;
   }
   .hero h1 {
     font-family: var(--display);
     font-weight: 800;
-    font-size: clamp(60px, 11vw, 180px);
+    font-size: clamp(52px, 9vw, 155px);
     line-height: 0.92;
     letter-spacing: -0.04em;
-    margin-bottom: 40px;
+    margin-bottom: 36px;
   }
-  .hero h1 .ital {
-    font-family: var(--body);
-    font-style: italic;
-    font-weight: 400;
-    color: var(--accent);
-    letter-spacing: -0.02em;
-  }
-  .hero h1 .arrow {
-    display: inline-block;
-    transform: translateY(-0.08em);
-    color: var(--accent);
-  }
-  .hero .lede {
-    max-width: 560px;
-    font-size: 20px;
-    line-height: 1.45;
-    color: var(--ink-soft);
-    margin-left: auto;
-  }
+  .hero h1 .ital { font-family: var(--body); font-style: italic; font-weight: 400; color: var(--accent); letter-spacing: -0.02em; }
+  .hero h1 .arrow { display: inline-block; transform: translateY(-0.08em); color: var(--accent); }
+  .hero .lede { max-width: 480px; font-size: 18px; line-height: 1.5; color: var(--ink-soft); }
+  .hero-art { display: flex; justify-content: center; align-items: flex-end; }
 
-  /* ── marquee ──────────────────────────────── */
-  .marquee {
-    border-bottom: 1px solid var(--line);
-    overflow: hidden;
-    background: var(--accent);
-    color: var(--bg);
-    padding: 22px 0;
+  /* SVG animations */
+  @keyframes hero-wobble {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(3.5deg); }
+    75% { transform: rotate(-3.5deg); }
   }
+  @keyframes card-wobble {
+    0%, 100% { transform: rotate(0deg); }
+    30% { transform: rotate(4deg); }
+    70% { transform: rotate(-4deg); }
+  }
+  @keyframes toast-bounce {
+    0%, 100% { transform: rotate(-6deg) translateY(0); }
+    50% { transform: rotate(-6deg) translateY(-16px); }
+  }
+  @keyframes shadow-shrink {
+    0%, 100% { transform: scaleX(1); opacity: 0.13; }
+    50% { transform: scaleX(0.6); opacity: 0.05; }
+  }
+  .hero-top { transform-origin: 160px 160px; animation: hero-wobble 2.2s ease-in-out infinite; }
+  .card1-top { transform-origin: 100px 94px; animation: card-wobble 2s ease-in-out infinite; }
+  .toast-body { transform-origin: 100px 123px; animation: toast-bounce 1.3s ease-in-out infinite; }
+  .toast-shadow { transform-origin: 100px 207px; animation: shadow-shrink 1.3s ease-in-out infinite; }
+
+  /* marquee */
+  .marquee { border-bottom: 1px solid var(--line); overflow: hidden; background: var(--accent); color: var(--bg); padding: 22px 0; }
   .marquee-track {
-    display: flex;
-    white-space: nowrap;
+    display: flex; white-space: nowrap;
     animation: scroll 28s linear infinite;
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: 28px;
-    letter-spacing: -0.01em;
+    font-family: var(--display); font-weight: 700; font-size: 28px; letter-spacing: -0.01em;
   }
   .marquee-track span { padding: 0 28px; display: inline-flex; align-items: center; gap: 28px; }
-  .marquee-track .star { color: var(--bg); }
-  @keyframes scroll {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
+  @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-  /* ── section heads ────────────────────────── */
+  /* section heads */
   .section-head {
     display: flex; justify-content: space-between; align-items: baseline;
-    padding-top: 80px;
-    margin-bottom: 48px;
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    padding-top: 80px; margin-bottom: 48px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
   }
-  .section-head h2 {
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: clamp(40px, 6vw, 84px);
-    letter-spacing: -0.03em;
-    text-transform: none;
-    line-height: 1;
-  }
+  .section-head h2 { font-family: var(--display); font-weight: 700; font-size: clamp(40px, 6vw, 84px); letter-spacing: -0.03em; text-transform: none; line-height: 1; }
   .section-head .num { color: var(--ink-soft); }
 
-  /* ── works grid ───────────────────────────── */
-  .works {
-    padding-bottom: 80px;
-    border-bottom: 1px solid var(--line);
-  }
-  .works-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-  }
+  /* works */
+  .works { padding-bottom: 80px; border-bottom: 1px solid var(--line); }
+  .works-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
   .work {
     cursor: pointer;
     transition: transform .35s cubic-bezier(.2,.8,.2,1);
-    display: block;
-    color: inherit;
-    text-decoration: none;
+    display: block; color: inherit; text-decoration: none;
   }
   .work:hover { transform: translateY(-6px); }
   .work-art {
@@ -203,57 +165,13 @@
     overflow: hidden;
     position: relative;
     margin-bottom: 18px;
-    transition: transform .35s cubic-bezier(.2,.8,.2,1);
   }
   .work-1 .work-art { background: var(--card-1); }
   .work-2 .work-art { background: var(--card-2); }
   .work-3 .work-art { background: var(--card-3); }
+  .work-art svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
-  /* card 1: stacked penguins (circles + triangles) */
-  .work-1 .work-art::before {
-    content: '';
-    position: absolute;
-    left: 50%; top: 30%;
-    width: 110px; height: 110px;
-    background: var(--ink);
-    border-radius: 50%;
-    transform: translateX(-50%);
-    box-shadow:
-      -90px 90px 0 -10px var(--ink),
-      90px 90px 0 -10px var(--ink);
-  }
-  .work-1 .work-art::after {
-    content: '';
-    position: absolute;
-    inset: auto 0 0 0;
-    height: 30%;
-    background: var(--bg);
-    border-top: 1px solid var(--line);
-  }
-
-  /* card 2: bouncing toast (square + curve) */
-  .work-2 .work-art::before {
-    content: '';
-    position: absolute;
-    left: 50%; top: 50%;
-    width: 130px; height: 110px;
-    background: var(--ink);
-    transform: translate(-50%, -50%) rotate(-8deg);
-    border-radius: 18px 18px 6px 6px;
-    box-shadow: 0 8px 0 var(--accent);
-  }
-  .work-2 .work-art::after {
-    content: '';
-    position: absolute;
-    bottom: 28px; left: 50%;
-    transform: translateX(-50%);
-    width: 60%; height: 4px;
-    background: var(--ink);
-    border-radius: 50%;
-    opacity: 0.4;
-  }
-
-  /* card 3: coming soon (plus marks) */
+  /* card 3 grid + TBA */
   .work-3 .work-art {
     background-image:
       linear-gradient(var(--ink) 2px, transparent 2px),
@@ -264,145 +182,50 @@
   }
   .work-3 .work-art::before {
     content: 'TBA';
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     display: grid; place-items: center;
-    font-family: var(--display);
-    font-weight: 800;
-    font-size: 56px;
-    color: var(--ink);
-    letter-spacing: -0.04em;
+    font-family: var(--display); font-weight: 800; font-size: 56px; color: var(--ink); letter-spacing: -0.04em;
   }
 
-  .work-info {
-    display: flex; justify-content: space-between; align-items: baseline;
-    border-top: 1px solid var(--line);
-    padding-top: 14px;
-  }
-  .work-info h3 {
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: 24px;
-    letter-spacing: -0.02em;
-  }
-  .work-info .tag {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
-  .work-desc {
-    margin-top: 10px;
-    font-size: 15px;
-    color: var(--ink-soft);
-    font-style: italic;
-  }
+  .work-info { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--line); padding-top: 14px; }
+  .work-info h3 { font-family: var(--display); font-weight: 700; font-size: 24px; letter-spacing: -0.02em; }
+  .work-info .tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+  .work-desc { margin-top: 10px; font-size: 15px; color: var(--ink-soft); font-style: italic; }
 
-  /* ── about ────────────────────────────────── */
-  .about {
-    padding: 80px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .about-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.6fr;
-    gap: 80px;
-    align-items: start;
-  }
-  .about-grid .label {
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    border-top: 1px solid var(--line);
-    padding-top: 18px;
-  }
-  .about-text {
-    font-size: 22px;
-    line-height: 1.5;
-  }
+  /* about */
+  .about { padding: 80px 0; border-bottom: 1px solid var(--line); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 80px; align-items: start; }
+  .about-grid .label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 18px; }
+  .about-text { font-size: 22px; line-height: 1.5; }
   .about-text p + p { margin-top: 22px; }
-  .about-text .highlight {
-    background: var(--accent);
-    color: var(--bg);
-    padding: 0 8px;
-    font-style: italic;
-  }
+  .about-text .highlight { background: var(--accent); color: var(--bg); padding: 0 8px; font-style: italic; }
 
-  /* ── contact ──────────────────────────────── */
-  .contact {
-    padding: 100px 0 80px;
-    text-align: center;
-    border-bottom: 1px solid var(--line);
-  }
-  .contact .small {
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    margin-bottom: 32px;
-  }
-  .contact h2 {
-    font-family: var(--display);
-    font-weight: 800;
-    font-size: clamp(48px, 9vw, 140px);
-    letter-spacing: -0.04em;
-    line-height: 0.95;
-    margin-bottom: 40px;
-  }
-  .contact a.mail {
-    color: var(--accent);
-    text-decoration: underline;
-    text-decoration-thickness: 3px;
-    text-underline-offset: 8px;
-    transition: color .2s;
-  }
+  /* contact */
+  .contact { padding: 100px 0 80px; text-align: center; border-bottom: 1px solid var(--line); }
+  .contact .small { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 32px; }
+  .contact h2 { font-family: var(--display); font-weight: 800; font-size: clamp(48px, 9vw, 140px); letter-spacing: -0.04em; line-height: 0.95; margin-bottom: 40px; }
+  .contact a.mail { color: var(--accent); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 8px; transition: color .2s; }
   .contact a.mail:hover { color: var(--ink); }
-  .links {
-    display: flex; justify-content: center; gap: 32px;
-    margin-top: 50px;
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .links a {
-    color: var(--ink);
-    text-decoration: none;
-    border-bottom: 1px solid var(--ink);
-    padding-bottom: 4px;
-    transition: color .2s, border-color .2s;
-  }
+  .links { display: flex; justify-content: center; gap: 32px; margin-top: 50px; font-family: var(--mono); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .links a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--ink); padding-bottom: 4px; transition: color .2s, border-color .2s; }
   .links a:hover { color: var(--accent); border-color: var(--accent); }
 
-  /* ── footer ───────────────────────────────── */
-  footer {
-    padding: 32px 0;
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
+  /* footer */
+  footer { padding: 32px 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
   footer .row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
 
-  /* ── reveal animation ─────────────────────── */
-  .reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity .8s ease, transform .8s ease;
-  }
+  /* reveal */
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .8s ease, transform .8s ease; }
   .reveal.in { opacity: 1; transform: translateY(0); }
 
-  /* ── responsive ───────────────────────────── */
+  /* responsive */
   @media (max-width: 900px) {
     .container { padding: 0 22px; }
     .hero { padding: 60px 0 50px; }
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-art { display: none; }
     .hero .meta { gap: 16px; margin-bottom: 36px; }
-    .hero .lede { margin-left: 0; font-size: 17px; }
+    .hero .lede { font-size: 17px; }
     .works-grid { grid-template-columns: 1fr; gap: 40px; }
     .work-art { aspect-ratio: 5 / 4; }
     .about-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -430,33 +253,69 @@
 
 <header class="hero">
   <div class="container">
-    <div class="meta reveal">
-      <span>◷ Est. 2025 · Seoul</span>
-      <span>Indie Game Studio</span>
-      <span>Hyper-Casual</span>
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="meta reveal">
+          <span>◷ Est. 2025 · Seoul</span>
+          <span>Indie Game Studio</span>
+          <span>Hyper-Casual</span>
+        </div>
+        <h1 class="reveal">
+          One-minute<br>
+          games, made<br>
+          <span class="ital">with care</span> <span class="arrow">↘</span>
+        </h1>
+        <p class="lede reveal">
+          We design small, snappy games you can pick up in one tap and finish before your coffee cools.
+          Built solo, shipped honestly, polished until they hum.
+        </p>
+      </div>
+
+      <div class="hero-art reveal">
+        <svg viewBox="0 0 320 460" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:360px;" aria-hidden="true">
+          <text x="160" y="96" text-anchor="middle" font-family="'Bricolage Grotesque', sans-serif" font-weight="800" font-size="16" fill="#FF3A1F" letter-spacing="0.5" opacity="0.9">PERFECT!</text>
+          <ellipse cx="160" cy="448" rx="124" ry="13" fill="rgba(20,20,15,0.09)"/>
+          <rect x="20" y="370" width="280" height="60" rx="9" fill="#FF3A1F"/>
+          <circle cx="144" cy="400" r="8" fill="white"/><circle cx="176" cy="400" r="8" fill="white"/>
+          <circle cx="144" cy="400" r="3.5" fill="#14140F"/><circle cx="176" cy="400" r="3.5" fill="#14140F"/>
+          <polygon points="153,408 167,408 160,418" fill="#FF8B00"/>
+          <rect x="40" y="310" width="240" height="60" rx="9" fill="#FF8B6B"/>
+          <circle cx="144" cy="340" r="8" fill="white"/><circle cx="176" cy="340" r="8" fill="white"/>
+          <circle cx="144" cy="340" r="3.5" fill="#14140F"/><circle cx="176" cy="340" r="3.5" fill="#14140F"/>
+          <polygon points="153,348 167,348 160,358" fill="#FF8B00"/>
+          <rect x="60" y="250" width="200" height="60" rx="9" fill="#7BC9D6"/>
+          <circle cx="144" cy="280" r="8" fill="white"/><circle cx="176" cy="280" r="8" fill="white"/>
+          <circle cx="144" cy="280" r="3.5" fill="#14140F"/><circle cx="176" cy="280" r="3.5" fill="#14140F"/>
+          <polygon points="153,288 167,288 160,298" fill="#FF8B00"/>
+          <rect x="75" y="190" width="170" height="60" rx="9" fill="#5C8BCB"/>
+          <circle cx="144" cy="220" r="8" fill="white"/><circle cx="176" cy="220" r="8" fill="white"/>
+          <circle cx="144" cy="220" r="3.5" fill="#14140F"/><circle cx="176" cy="220" r="3.5" fill="#14140F"/>
+          <polygon points="153,228 167,228 160,238" fill="#FF8B00"/>
+          <g class="hero-top">
+            <rect x="90" y="130" width="140" height="60" rx="9" fill="#A78BCB"/>
+            <circle cx="144" cy="160" r="8" fill="white"/><circle cx="176" cy="160" r="8" fill="white"/>
+            <circle cx="144" cy="160" r="3.5" fill="#14140F"/><circle cx="176" cy="160" r="3.5" fill="#14140F"/>
+            <polygon points="153,168 167,168 160,178" fill="#FF8B00"/>
+          </g>
+          <text x="18" y="88" font-size="20" fill="#FF3A1F" opacity="0.4">★</text>
+          <text x="276" y="116" font-size="14" fill="#FF3A1F" opacity="0.28">★</text>
+          <text x="44" y="200" font-size="11" fill="#FF3A1F" opacity="0.2">★</text>
+        </svg>
+      </div>
     </div>
-    <h1 class="reveal">
-      One-minute<br>
-      games, made<br>
-      <span class="ital">with care</span> <span class="arrow">↘</span>
-    </h1>
-    <p class="lede reveal">
-      We design small, snappy games you can pick up in one tap and finish before your coffee cools.
-      Built solo, shipped honestly, polished until they hum.
-    </p>
   </div>
 </header>
 
 <div class="marquee" aria-hidden="true">
   <div class="marquee-track">
-    <span>★ Now Playing</span><span class="star">·</span>
-    <span>One-Minute Games</span><span class="star">·</span>
-    <span>Tap. Play. Smile.</span><span class="star">·</span>
-    <span>Made in Seoul</span><span class="star">·</span>
-    <span>★ Now Playing</span><span class="star">·</span>
-    <span>One-Minute Games</span><span class="star">·</span>
-    <span>Tap. Play. Smile.</span><span class="star">·</span>
-    <span>Made in Seoul</span><span class="star">·</span>
+    <span>★ Now Playing</span><span>·</span>
+    <span>One-Minute Games</span><span>·</span>
+    <span>Tap. Play. Smile.</span><span>·</span>
+    <span>Made in Seoul</span><span>·</span>
+    <span>★ Now Playing</span><span>·</span>
+    <span>One-Minute Games</span><span>·</span>
+    <span>Tap. Play. Smile.</span><span>·</span>
+    <span>Made in Seoul</span><span>·</span>
   </div>
 </div>
 
@@ -468,8 +327,28 @@
     </div>
 
     <div class="works-grid">
+
       <a href="./penguin-pile/" class="work work-1 reveal">
-        <div class="work-art" role="img" aria-label="Penguin Pile cover art"></div>
+        <div class="work-art" role="img" aria-label="Penguin Pile — stacked colorful penguin blocks">
+          <svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <text x="100" y="44" text-anchor="middle" font-family="'Bricolage Grotesque', sans-serif" font-weight="800" font-size="13" fill="#FF3A1F" letter-spacing="0.5" opacity="0.9">PERFECT!</text>
+            <ellipse cx="100" cy="234" rx="68" ry="9" fill="rgba(20,20,15,0.1)"/>
+            <rect x="20" y="175" width="160" height="54" rx="8" fill="#FF3A1F"/>
+            <circle cx="86" cy="202" r="7" fill="white"/><circle cx="114" cy="202" r="7" fill="white"/>
+            <circle cx="86" cy="202" r="3" fill="#14140F"/><circle cx="114" cy="202" r="3" fill="#14140F"/>
+            <polygon points="95,209 105,209 100,218" fill="#FF8B00"/>
+            <rect x="35" y="121" width="130" height="54" rx="8" fill="#FF8B6B"/>
+            <circle cx="86" cy="148" r="7" fill="white"/><circle cx="114" cy="148" r="7" fill="white"/>
+            <circle cx="86" cy="148" r="3" fill="#14140F"/><circle cx="114" cy="148" r="3" fill="#14140F"/>
+            <polygon points="95,155 105,155 100,164" fill="#FF8B00"/>
+            <g class="card1-top">
+              <rect x="50" y="67" width="100" height="54" rx="8" fill="#7BC9D6"/>
+              <circle cx="86" cy="94" r="7" fill="white"/><circle cx="114" cy="94" r="7" fill="white"/>
+              <circle cx="86" cy="94" r="3" fill="#14140F"/><circle cx="114" cy="94" r="3" fill="#14140F"/>
+              <polygon points="95,101 105,101 100,110" fill="#FF8B00"/>
+            </g>
+          </svg>
+        </div>
         <div class="work-info">
           <h3>Penguin Pile</h3>
           <span class="tag">▶ Play now · Web</span>
@@ -477,14 +356,32 @@
         <p class="work-desc">Stack penguins. Don't let them fall. Ridiculously hard, ridiculously fun.</p>
       </a>
 
-      <article class="work work-2 reveal">
-        <div class="work-art" role="img" aria-label="Tap Tap Toast cover art"></div>
+      <a href="./tap-tap-toast/" class="work work-2 reveal">
+        <div class="work-art" role="img" aria-label="Tap Tap Toast — a bouncing toast character">
+          <svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <ellipse class="toast-shadow" cx="100" cy="207" rx="46" ry="7" fill="rgba(20,20,15,0.13)"/>
+            <g class="toast-body">
+              <rect x="48" y="58" width="104" height="132" rx="22" fill="#2B1A0E"/>
+              <rect x="48" y="58" width="104" height="50" rx="22" fill="#8B5E3C"/>
+              <rect x="64" y="90" width="72" height="15" rx="5" fill="#FFD166"/>
+              <circle cx="82" cy="146" r="11" fill="white"/>
+              <circle cx="118" cy="146" r="11" fill="white"/>
+              <circle cx="82" cy="146" r="4.5" fill="#2B1A0E"/>
+              <circle cx="118" cy="146" r="4.5" fill="#2B1A0E"/>
+              <circle cx="85" cy="143" r="2" fill="white"/>
+              <circle cx="121" cy="143" r="2" fill="white"/>
+              <circle cx="66" cy="156" r="9" fill="#FF8B6B" opacity="0.4"/>
+              <circle cx="134" cy="156" r="9" fill="#FF8B6B" opacity="0.4"/>
+              <path d="M84 163 Q100 178 116 163" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </g>
+          </svg>
+        </div>
         <div class="work-info">
           <h3>Tap Tap Toast</h3>
-          <span class="tag">Coming Soon</span>
+          <span class="tag">▶ Play now · Web</span>
         </div>
         <p class="work-desc">A timing game where you cook breakfast for the universe. Don't burn it.</p>
-      </article>
+      </a>
 
       <article class="work work-3 reveal">
         <div class="work-art" role="img" aria-label="Untitled project, coming soon"></div>
@@ -504,7 +401,6 @@
       <h2>About</h2>
       <span class="num">— 02 / 03 —</span>
     </div>
-
     <div class="about-grid">
       <div class="label reveal">Studio Note</div>
       <div class="about-text reveal">
@@ -549,25 +445,14 @@
 </footer>
 
 <script>
-  // Reveal on scroll
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
     });
   }, { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-  // Stagger reveal for hero
-  document.querySelectorAll('.hero .reveal').forEach((el, i) => {
-    el.style.transitionDelay = (i * 120) + 'ms';
-  });
-  // Stagger reveal for work cards
-  document.querySelectorAll('.works-grid .reveal').forEach((el, i) => {
-    el.style.transitionDelay = (i * 150) + 'ms';
-  });
+  document.querySelectorAll('.hero .reveal').forEach((el, i) => { el.style.transitionDelay = (i * 120) + 'ms'; });
+  document.querySelectorAll('.works-grid .reveal').forEach((el, i) => { el.style.transitionDelay = (i * 150) + 'ms'; });
 </script>
 
 </body>

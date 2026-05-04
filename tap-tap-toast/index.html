@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#F2ECDF" />
+<title>Tap Tap Toast · Lena Studio</title>
+<meta name="description" content="Cook the perfect toast. A one-tap timing game by Lena Studio." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F2ECDF;
+    --ink: #14140F;
+    --ink-soft: #4A4A40;
+    --accent: #FF3A1F;
+    --display: 'Bricolage Grotesque', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--display);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 100;
+    opacity: 0.3; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  #game { display: block; width: 100%; height: 100%; cursor: pointer; }
+  .ui {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 24px 28px; pointer-events: none;
+    display: flex; justify-content: space-between; align-items: flex-start; z-index: 5;
+  }
+  .score { font-family: var(--display); font-weight: 800; font-size: clamp(64px, 14vw, 96px); color: var(--ink); letter-spacing: -0.05em; line-height: 1; }
+  .best-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-top: 6px; }
+  .brand { pointer-events: auto; text-align: right; }
+  .brand a { font-family: var(--display); font-weight: 800; font-size: 14px; color: var(--ink); text-decoration: none; }
+  .brand .dot { color: var(--accent); }
+  .brand a:hover { color: var(--accent); }
+  .brand .sub { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-top: 4px; }
+  .overlay {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    text-align: center; padding: 32px;
+    background: rgba(242,236,223,0.82);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    z-index: 10; cursor: pointer;
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .overlay .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 28px; }
+  .overlay h1 { font-family: var(--display); font-weight: 800; font-size: clamp(64px, 16vw, 120px); letter-spacing: -0.05em; line-height: 0.88; margin-bottom: 28px; }
+  .overlay h1 .ital { font-style: italic; font-weight: 400; color: var(--accent); font-family: 'Fraunces', Georgia, serif; }
+  .overlay .desc { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; }
+  .overlay .final { font-family: var(--display); font-weight: 800; font-size: clamp(80px, 18vw, 140px); line-height: 1; letter-spacing: -0.05em; color: var(--accent); margin: 8px 0 16px; }
+  .overlay .best-line { font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); }
+  .cta { margin-top: 36px; font-family: var(--mono); font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; background: var(--accent); color: var(--bg); padding: 16px 30px; border-radius: 999px; animation: pulseBtn 1.4s ease-in-out infinite; }
+  @keyframes pulseBtn { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+  .hidden { display: none !important; }
+  @media (max-width: 600px) { .ui { padding: 18px 20px; } }
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div class="ui">
+  <div>
+    <div class="score" id="score">0</div>
+    <div class="best-label">Best <span id="best">0</span></div>
+  </div>
+  <div class="brand">
+    <a href="../">Lena<span class="dot">.</span> Studio ↗</a>
+    <span class="sub">Back to studio</span>
+  </div>
+</div>
+
+<div class="overlay" id="intro">
+  <div class="kicker">★ Lena Studio presents</div>
+  <h1>Tap Tap<br><span class="ital">Toast</span></h1>
+  <div class="desc">Tap when it's golden · Don't let it burn</div>
+  <div class="cta">Tap anywhere to start</div>
+</div>
+
+<div class="overlay hidden" id="gameover">
+  <div class="kicker" id="goKicker">★ Game Over</div>
+  <div class="desc" id="goDesc">You cooked</div>
+  <div class="final" id="finalScore">0</div>
+  <div class="best-line" id="bestText">Best 0</div>
+  <div class="cta">Tap to cook again</div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+const intro = document.getElementById('intro');
+const gameover = document.getElementById('gameover');
+const goKicker = document.getElementById('goKicker');
+const goDesc = document.getElementById('goDesc');
+const finalScore = document.getElementById('finalScore');
+const bestText = document.getElementById('bestText');
+
+let W = 0, H = 0, dpr = 1;
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// audio
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+}
+function beep(freq, dur=0.08, type='sine', vol=0.06) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.type = type; osc.frequency.value = freq;
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  osc.start(); osc.stop(audioCtx.currentTime + dur);
+}
+
+// constants
+const GOOD_MIN    = 0.28;
+const GOOD_MAX    = 0.80;
+const PERFECT_MIN = 0.42;
+const PERFECT_MAX = 0.62;
+const BASE_SPEED  = 0.0032;
+const SPEED_INC   = 0.00018;
+const POP_VEL     = 16;
+const GRAVITY     = 1.1;
+
+// state
+let state = 'intro';
+let score = 0;
+let best = parseInt(localStorage.getItem('lena_ttt_best') || '0', 10);
+let doneness = 0;
+let speed = BASE_SPEED;
+let popHeight = 0;
+let popVelocity = 0;
+let needsReset = false;
+let shakeAmt = 0;
+let feedbacks = [];
+let sparkles = [];
+let smoke = [];
+
+bestEl.textContent = best;
+
+// layout
+function layout() {
+  const tw = Math.min(240, W * 0.60);
+  const th = tw * 0.50;
+  const cx = W / 2;
+  const cy = H * 0.52;
+  const slotW = tw * 0.50;
+  const slotTopY = cy - th / 2;
+  const toastW = slotW * 0.84;
+  const toastH = toastW * 1.42;
+  return { tw, th, cx, cy, slotW, slotTopY, toastW, toastH };
+}
+
+// color
+function doneColor(d) {
+  const stops = [
+    [0.00, [245,232,200]],
+    [0.28, [240,200,120]],
+    [0.52, [232,168, 56]],
+    [0.72, [196,120, 58]],
+    [0.86, [122, 58, 16]],
+    [1.00, [ 42, 14,  0]],
+  ];
+  for (let i = 0; i < stops.length - 1; i++) {
+    const [t0,c0] = stops[i], [t1,c1] = stops[i+1];
+    if (d <= t1) {
+      const t = (d-t0)/(t1-t0);
+      return `rgb(${Math.round(c0[0]+(c1[0]-c0[0])*t)},${Math.round(c0[1]+(c1[1]-c0[1])*t)},${Math.round(c0[2]+(c1[2]-c0[2])*t)})`;
+    }
+  }
+  return 'rgb(42,14,0)';
+}
+
+// roundRect helper
+function roundRect(x, y, w, h, r) {
+  if (typeof r === 'object') {
+    const tl=r.tl||0, tr=r.tr||0, br=r.br||0, bl=r.bl||0;
+    ctx.beginPath();
+    ctx.moveTo(x+tl, y);
+    ctx.lineTo(x+w-tr, y); ctx.arcTo(x+w, y, x+w, y+tr, tr);
+    ctx.lineTo(x+w, y+h-br); ctx.arcTo(x+w, y+h, x+w-br, y+h, br);
+    ctx.lineTo(x+bl, y+h); ctx.arcTo(x, y+h, x, y+h-bl, bl);
+    ctx.lineTo(x, y+tl); ctx.arcTo(x, y, x+tl, y, tl);
+    ctx.closePath(); return;
+  }
+  r = Math.min(r, Math.abs(w)/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r, y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x, y+r); ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+
+// game logic
+function startGame() {
+  doneness = 0; speed = BASE_SPEED; score = 0;
+  popHeight = 0; popVelocity = 0; needsReset = false;
+  shakeAmt = 0; feedbacks = []; sparkles = []; smoke = [];
+  scoreEl.textContent = '0';
+}
+
+function endGame(reason) {
+  if (state === 'gameover') return;
+  state = 'gameover';
+  goKicker.textContent = reason === 'raw' ? '★ Way too raw!' : '★ Burnt to a crisp!';
+  goDesc.textContent = reason === 'raw' ? 'You cooked' : 'You managed';
+  finalScore.textContent = score;
+  if (score > best) {
+    best = score;
+    localStorage.setItem('lena_ttt_best', best);
+    bestEl.textContent = best;
+    bestText.textContent = '★ New best!';
+  } else {
+    bestText.textContent = `Best ${best}`;
+  }
+  setTimeout(() => gameover.classList.remove('hidden'), 850);
+}
+
+function tap(e) {
+  if (e && e.target && e.target.closest && e.target.closest('a')) return;
+  if (e) e.preventDefault();
+  initAudio();
+
+  if (state === 'intro') {
+    state = 'playing'; intro.classList.add('hidden'); startGame(); return;
+  }
+  if (state === 'gameover') {
+    state = 'playing'; gameover.classList.add('hidden'); startGame(); return;
+  }
+  if (state !== 'playing' || popHeight > 5) return;
+
+  if (doneness < GOOD_MIN) {
+    beep(220, 0.3, 'sawtooth', 0.07); shakeAmt = 10; endGame('raw'); return;
+  }
+  if (doneness > GOOD_MAX) {
+    beep(120, 0.4, 'sawtooth', 0.08); shakeAmt = 14; endGame('burnt'); return;
+  }
+
+  const perfect = doneness >= PERFECT_MIN && doneness <= PERFECT_MAX;
+  score++;
+  speed = BASE_SPEED + score * SPEED_INC;
+  scoreEl.textContent = score;
+  popVelocity = POP_VEL;
+  needsReset = true;
+
+  if (perfect) {
+    beep(880, 0.06, 'square', 0.05);
+    setTimeout(() => beep(1320, 0.08, 'square', 0.05), 60);
+  } else {
+    beep(440 + score * 12, 0.07, 'sine', 0.05);
+  }
+
+  const { cx, slotTopY, toastH } = layout();
+  const ty = slotTopY - toastH * 0.36;
+
+  feedbacks.push({ x: cx, y: ty, text: perfect ? 'PERFECT!' : 'GOOD!', isPerfect: perfect, alpha: 1, vy: -2.0 });
+
+  if (perfect) {
+    for (let i = 0; i < 8; i++) {
+      const a = (i/8)*Math.PI*2, spd = 3+Math.random()*3;
+      sparkles.push({ x: cx, y: ty+20, vx: Math.cos(a)*spd, vy: Math.sin(a)*spd-2, r: 3+Math.random()*3, alpha: 1 });
+    }
+  }
+}
+
+// update
+function update() {
+  if (state !== 'playing') return;
+
+  if (popHeight <= 0 && !needsReset) {
+    doneness = Math.min(1, doneness + speed);
+    if (doneness >= 1) {
+      beep(80, 0.6, 'sawtooth', 0.1); shakeAmt = 14; endGame('burnt'); return;
+    }
+  }
+
+  if (popVelocity > 0 || popHeight > 0) {
+    popVelocity -= GRAVITY;
+    popHeight = Math.max(0, popHeight + popVelocity);
+    if (popHeight <= 0 && popVelocity <= 0 && needsReset) {
+      doneness = 0; needsReset = false; popVelocity = 0;
+    }
+  }
+
+  feedbacks.forEach(f => { f.y += f.vy; f.alpha -= 0.022; f.vy *= 0.93; });
+  feedbacks = feedbacks.filter(f => f.alpha > 0);
+
+  sparkles.forEach(s => { s.x += s.vx; s.y += s.vy; s.vy += 0.2; s.alpha -= 0.03; });
+  sparkles = sparkles.filter(s => s.alpha > 0);
+
+  if (doneness > 0.72 && state === 'playing') {
+    if (Math.random() < (doneness - 0.72) * 2.8) {
+      const { cx, slotTopY } = layout();
+      smoke.push({ x: cx+(Math.random()-0.5)*36, y: slotTopY-10, vx:(Math.random()-0.5)*0.7, vy:-1.3-Math.random()*0.5, r:5+Math.random()*6, alpha:0.5 });
+    }
+  }
+  smoke.forEach(s => { s.x+=s.vx; s.y+=s.vy; s.r+=0.4; s.alpha-=0.013; });
+  smoke = smoke.filter(s => s.alpha > 0);
+
+  if (shakeAmt > 0) shakeAmt *= 0.82;
+}
+
+// drawing
+function drawToast(cx, slotTopY, toastW, toastH, d, popH) {
+  const RESTING = 0.38;
+  const toastTop = slotTopY - toastH * RESTING - popH;
+  const tx = cx - toastW / 2;
+
+  // glow in perfect zone
+  if (d >= PERFECT_MIN - 0.08 && d <= PERFECT_MAX + 0.08) {
+    const glowA = Math.max(0, 1 - Math.abs(d - (PERFECT_MIN+PERFECT_MAX)/2) / 0.22) * 0.2;
+    const g = ctx.createRadialGradient(cx, toastTop+toastH*0.5, 0, cx, toastTop+toastH*0.5, toastW);
+    g.addColorStop(0, `rgba(232,168,56,${glowA})`);
+    g.addColorStop(1, 'rgba(232,168,56,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(cx-toastW, toastTop, toastW*2, toastH);
+  }
+
+  // body
+  ctx.fillStyle = doneColor(d);
+  roundRect(tx, toastTop, toastW, toastH, 10);
+  ctx.fill();
+
+  // crust top stripe
+  ctx.fillStyle = 'rgba(20,20,15,0.13)';
+  roundRect(tx, toastTop, toastW, toastH*0.14, {tl:10,tr:10,bl:0,br:0});
+  ctx.fill();
+
+  // face
+  const faceCX = cx;
+  const faceCY = toastTop + toastH * 0.50;
+  const eyeR = toastW * 0.087;
+  const eyeOff = toastW * 0.22;
+
+  // sweat drop when hot
+  if (d > 0.60) {
+    const sw = Math.min(1, (d-0.60)/0.2);
+    ctx.fillStyle = `rgba(100,160,220,${sw*0.9})`;
+    const sdx = faceCX + eyeOff + eyeR*1.6, sdy = faceCY - eyeR*3;
+    ctx.beginPath(); ctx.arc(sdx, sdy, eyeR*0.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(sdx, sdy + eyeR*0.5);
+    ctx.quadraticCurveTo(sdx+eyeR*0.7, sdy+eyeR*1.5, sdx, sdy+eyeR*2.2);
+    ctx.closePath(); ctx.fill();
+  }
+
+  // eyes white
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  ctx.arc(faceCX-eyeOff, faceCY, eyeR, 0, Math.PI*2);
+  ctx.arc(faceCX+eyeOff, faceCY, eyeR, 0, Math.PI*2);
+  ctx.fill();
+
+  // pupils (look up when panicking)
+  const pupilR = eyeR*0.42;
+  const pupilShift = d > 0.72 ? -eyeR*0.28 : 0;
+  ctx.fillStyle = '#14140F';
+  ctx.beginPath();
+  ctx.arc(faceCX-eyeOff, faceCY+pupilShift, pupilR, 0, Math.PI*2);
+  ctx.arc(faceCX+eyeOff, faceCY+pupilShift, pupilR, 0, Math.PI*2);
+  ctx.fill();
+
+  // eye shine
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  ctx.arc(faceCX-eyeOff+eyeR*0.28, faceCY-eyeR*0.28+pupilShift, pupilR*0.5, 0, Math.PI*2);
+  ctx.arc(faceCX+eyeOff+eyeR*0.28, faceCY-eyeR*0.28+pupilShift, pupilR*0.5, 0, Math.PI*2);
+  ctx.fill();
+
+  // cheeks when happy
+  if (d >= PERFECT_MIN-0.05 && d <= PERFECT_MAX+0.12) {
+    const ca = Math.min(1, 1-Math.abs(d-(PERFECT_MIN+PERFECT_MAX)/2)/0.2)*0.32;
+    ctx.fillStyle = `rgba(255,139,107,${ca})`;
+    ctx.beginPath();
+    ctx.ellipse(faceCX-eyeOff*1.5, faceCY+eyeR*0.5, eyeOff*0.52, eyeR*0.42, 0, 0, Math.PI*2);
+    ctx.ellipse(faceCX+eyeOff*1.5, faceCY+eyeR*0.5, eyeOff*0.52, eyeR*0.42, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // mouth
+  ctx.strokeStyle = '#14140F';
+  ctx.lineWidth = toastW * 0.038;
+  ctx.lineCap = 'round';
+  if (d > 0.82) {
+    // panicked open mouth
+    ctx.fillStyle = '#14140F';
+    ctx.beginPath();
+    ctx.ellipse(faceCX, faceCY+eyeR*1.6, eyeOff*0.48, eyeR*0.78, 0, 0, Math.PI*2);
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    if (d < 0.28) {
+      // nervous line
+      ctx.moveTo(faceCX-eyeOff*0.7, faceCY+eyeR*1.5);
+      ctx.lineTo(faceCX+eyeOff*0.7, faceCY+eyeR*1.5);
+    } else if (d < 0.65) {
+      // happy
+      ctx.arc(faceCX, faceCY+eyeR*0.4, eyeOff*0.68, 0.15*Math.PI, 0.85*Math.PI);
+    } else {
+      // worried frown
+      ctx.arc(faceCX, faceCY+eyeR*2.8, eyeOff*0.68, 1.15*Math.PI, 1.85*Math.PI);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawToaster(cx, cy, tw, th, slotW) {
+  const x = cx-tw/2, y = cy-th/2, r = 14;
+
+  // shadow
+  ctx.fillStyle = 'rgba(20,20,15,0.12)';
+  roundRect(x+5, y+7, tw, th, r); ctx.fill();
+
+  // body
+  ctx.fillStyle = '#14140F';
+  roundRect(x, y, tw, th, r); ctx.fill();
+
+  // vent lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.055)';
+  ctx.lineWidth = 2;
+  for (let i=0; i<4; i++) {
+    const lx = x+16+i*8;
+    ctx.beginPath(); ctx.moveTo(lx, y+th*0.25); ctx.lineTo(lx, y+th*0.75); ctx.stroke();
+  }
+
+  // slot opening
+  const slotX = cx-slotW/2, slotOpenH = th*0.3;
+  ctx.fillStyle = '#1A0E05';
+  roundRect(slotX, y, slotW, slotOpenH, {tl:6,tr:6,bl:0,br:0}); ctx.fill();
+
+  // heat glow inside slot
+  if (state === 'playing' && doneness > 0.08) {
+    const glowA = Math.min(0.6, doneness*0.75);
+    const hg = ctx.createLinearGradient(slotX, y, slotX, y+slotOpenH);
+    hg.addColorStop(0, 'rgba(255,100,0,0)');
+    hg.addColorStop(1, `rgba(255,80,0,${glowA})`);
+    ctx.fillStyle = hg;
+    roundRect(slotX, y, slotW, slotOpenH, {tl:6,tr:6,bl:0,br:0}); ctx.fill();
+  }
+
+  // lever rail
+  const lx = x+tw*0.80, ly = cy+th*0.04;
+  ctx.fillStyle = '#2A2A1A';
+  ctx.fillRect(lx-3, ly-14, 6, 28);
+  // lever knob
+  ctx.fillStyle = '#FF3A1F';
+  ctx.beginPath(); ctx.arc(lx, ly+4, 11, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.beginPath(); ctx.arc(lx-3, ly+1, 4, 0, Math.PI*2); ctx.fill();
+
+  // bottom strip
+  ctx.fillStyle = '#222218';
+  roundRect(x, y+th-11, tw, 11, {tl:0,tr:0,bl:r,br:r}); ctx.fill();
+}
+
+function drawHeatBar() {
+  const barH = 14;
+  const barW = Math.min(W*0.72, 340);
+  const barX = W/2-barW/2;
+  const barY = H-90;
+
+  // bg
+  ctx.fillStyle = 'rgba(20,20,15,0.1)';
+  roundRect(barX, barY, barW, barH, barH/2); ctx.fill();
+
+  // good zone
+  ctx.fillStyle = 'rgba(232,168,56,0.18)';
+  ctx.fillRect(barX+GOOD_MIN*barW, barY, (GOOD_MAX-GOOD_MIN)*barW, barH);
+
+  // perfect zone
+  ctx.fillStyle = 'rgba(232,168,56,0.40)';
+  ctx.fillRect(barX+PERFECT_MIN*barW, barY, (PERFECT_MAX-PERFECT_MIN)*barW, barH);
+
+  // fill
+  if (doneness > 0) {
+    ctx.fillStyle = doneColor(doneness);
+    roundRect(barX, barY, doneness*barW, barH, barH/2); ctx.fill();
+  }
+
+  // labels
+  ctx.font = `400 9.5px 'JetBrains Mono', monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(20,20,15,0.35)';
+  ctx.fillText('RAW', barX+GOOD_MIN*barW*0.5, barY-5);
+  ctx.fillText('PERFECT', barX+(GOOD_MIN+GOOD_MAX)*barW/2, barY-5);
+  ctx.fillText('BURNT', barX+barW-(1-GOOD_MAX)*barW*0.5, barY-5);
+
+  // markers
+  ctx.strokeStyle = 'rgba(20,20,15,0.18)';
+  ctx.lineWidth = 1;
+  [GOOD_MIN, GOOD_MAX].forEach(t => {
+    const tx = barX+t*barW;
+    ctx.beginPath(); ctx.moveTo(tx, barY-3); ctx.lineTo(tx, barY+barH+3); ctx.stroke();
+  });
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  const { tw, th, cx, cy, slotW, slotTopY, toastW, toastH } = layout();
+
+  ctx.save();
+  if (shakeAmt > 0.5) ctx.translate((Math.random()-0.5)*shakeAmt, (Math.random()-0.5)*shakeAmt);
+
+  if (state !== 'intro') drawHeatBar();
+
+  smoke.forEach(s => {
+    ctx.fillStyle = `rgba(80,55,40,${s.alpha})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+  });
+
+  if (state !== 'intro') drawToast(cx, slotTopY, toastW, toastH, doneness, popHeight);
+
+  drawToaster(cx, cy, tw, th, slotW);
+
+  sparkles.forEach(s => {
+    ctx.fillStyle = `rgba(255,209,102,${s.alpha})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+  });
+
+  feedbacks.forEach(f => {
+    ctx.fillStyle = f.isPerfect ? `rgba(232,168,56,${f.alpha})` : `rgba(20,20,15,${f.alpha})`;
+    ctx.font = `800 ${Math.round(W*0.056)}px 'Bricolage Grotesque', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(f.text, f.x, f.y);
+  });
+
+  ctx.restore();
+}
+
+function loop() { update(); render(); requestAnimationFrame(loop); }
+loop();
+
+canvas.addEventListener('pointerdown', tap);
+intro.addEventListener('pointerdown', tap);
+gameover.addEventListener('pointerdown', tap);
+document.addEventListener('keydown', e => {
+  if (e.code==='Space'||e.code==='Enter') { e.preventDefault(); tap(); }
+});
+</script>
+</body>
+</html>
