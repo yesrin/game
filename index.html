@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#F2ECDF" />
+<title>Penguin Pile · Lena Studio</title>
+<meta name="description" content="Stack penguins as high as you can. A one-tap hyper-casual game by Lena Studio." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F2ECDF;
+    --ink: #14140F;
+    --ink-soft: #4A4A40;
+    --accent: #FF3A1F;
+    --display: 'Bricolage Grotesque', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--display);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+  }
+
+  /* grain overlay matching main site */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.3;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  #game {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .ui {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 24px 28px;
+    pointer-events: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 5;
+  }
+
+  .score-box {
+    line-height: 1;
+  }
+  .score {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(64px, 14vw, 96px);
+    color: var(--ink);
+    letter-spacing: -0.05em;
+  }
+  .best {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  .brand {
+    pointer-events: auto;
+    text-align: right;
+  }
+  .brand a {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .brand .dot { color: var(--accent); }
+  .brand a:hover { color: var(--accent); }
+  .brand .sub {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 32px;
+    background: rgba(242, 236, 223, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 10;
+    cursor: pointer;
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .overlay .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+  }
+  .overlay h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(64px, 16vw, 132px);
+    letter-spacing: -0.05em;
+    line-height: 0.88;
+    margin-bottom: 28px;
+  }
+  .overlay h1 .ital {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+    font-family: 'Fraunces', Georgia, serif;
+    letter-spacing: -0.02em;
+  }
+  .overlay .desc {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .overlay .final {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(80px, 18vw, 140px);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: var(--accent);
+    margin: 8px 0 16px;
+  }
+  .overlay .best-line {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .cta {
+    margin-top: 36px;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 16px 30px;
+    border-radius: 999px;
+    animation: pulseBtn 1.4s ease-in-out infinite;
+  }
+  @keyframes pulseBtn {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 600px) {
+    .ui { padding: 18px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div class="ui">
+  <div class="score-box">
+    <div class="score" id="score">0</div>
+    <div class="best">Best <span id="best">0</span></div>
+  </div>
+  <div class="brand">
+    <a href="../">Lena<span class="dot">.</span> Studio ↗</a>
+    <span class="sub">Back to studio</span>
+  </div>
+</div>
+
+<div class="overlay" id="intro">
+  <div class="kicker">★ Lena Studio presents</div>
+  <h1>Penguin<br><span class="ital">Pile</span></h1>
+  <div class="desc">Tap to drop · Stack as high as you can</div>
+  <div class="cta">Tap anywhere to start</div>
+</div>
+
+<div class="overlay hidden" id="gameover">
+  <div class="kicker">★ Game Over</div>
+  <div class="desc">You stacked</div>
+  <div class="final" id="finalScore">0</div>
+  <div class="best-line" id="bestText">Best 0</div>
+  <div class="cta">Tap to play again</div>
+</div>
+
+<script>
+// ─── setup ──────────────────────────────────────────────
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+const intro = document.getElementById('intro');
+const gameover = document.getElementById('gameover');
+const finalScore = document.getElementById('finalScore');
+const bestText = document.getElementById('bestText');
+
+let W = 0, H = 0, dpr = 1;
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ─── game state ─────────────────────────────────────────
+let state = 'intro'; // intro | playing | gameover
+let blocks = [];
+let current = null;
+let falling = [];
+let perfects = [];
+let score = 0;
+let best = parseInt(localStorage.getItem('lena_pp_best') || '0', 10);
+let cameraY = 0;
+let targetCameraY = 0;
+let shake = 0;
+
+const COLORS = [
+  '#FF3A1F', '#FF8B6B', '#FFB58A',
+  '#7BC9D6', '#5C8BCB', '#A78BCB',
+  '#E68BB6', '#B7DDC2'
+];
+
+const BLOCK_H = 38;
+
+bestEl.textContent = best;
+
+function getBaseW() {
+  return Math.min(280, W * 0.62);
+}
+
+// ─── audio (web audio) ──────────────────────────────────
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {}
+  }
+}
+function beep(freq, dur = 0.08, type = 'sine', vol = 0.06) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+// ─── game logic ─────────────────────────────────────────
+function reset() {
+  blocks = [];
+  falling = [];
+  perfects = [];
+  current = null;
+  score = 0;
+  cameraY = 0;
+  targetCameraY = 0;
+  shake = 0;
+
+  const baseW = getBaseW();
+  blocks.push({
+    x: W / 2 - baseW / 2,
+    y: H - 120,
+    w: baseW,
+    h: BLOCK_H,
+    color: COLORS[0]
+  });
+  spawnNext();
+  scoreEl.textContent = '0';
+}
+
+function spawnNext() {
+  const last = blocks[blocks.length - 1];
+  const fromLeft = Math.random() < 0.5;
+  current = {
+    x: fromLeft ? -last.w - 20 : W + 20,
+    y: last.y - BLOCK_H,
+    w: last.w,
+    h: BLOCK_H,
+    dir: fromLeft ? 1 : -1,
+    speed: 2.6 + Math.min(score * 0.08, 4),
+    color: COLORS[blocks.length % COLORS.length]
+  };
+}
+
+function drop() {
+  initAudio();
+
+  if (state === 'intro') {
+    state = 'playing';
+    intro.classList.add('hidden');
+    reset();
+    return;
+  }
+  if (state === 'gameover') {
+    state = 'playing';
+    gameover.classList.add('hidden');
+    reset();
+    return;
+  }
+  if (!current || state !== 'playing') return;
+
+  const last = blocks[blocks.length - 1];
+  const left = Math.max(current.x, last.x);
+  const right = Math.min(current.x + current.w, last.x + last.w);
+  const overlap = right - left;
+
+  // total miss
+  if (overlap <= 0) {
+    falling.push({
+      x: current.x, y: current.y, w: current.w, h: BLOCK_H,
+      color: current.color, vy: 0,
+      rot: 0, vrot: (Math.random() - 0.5) * 0.15,
+      face: true
+    });
+    beep(120, 0.3, 'sawtooth', 0.08);
+    shake = 14;
+    endGame();
+    return;
+  }
+
+  // perfect
+  const perfect = Math.abs(current.x - last.x) < 4;
+  if (perfect) {
+    current.x = last.x;
+    perfects.push({
+      x: current.x + current.w / 2,
+      y: current.y,
+      alpha: 1, vy: -1.2
+    });
+    beep(880, 0.06, 'square', 0.05);
+    setTimeout(() => beep(1320, 0.08, 'square', 0.05), 60);
+  } else {
+    // create falling leftover
+    if (current.x < last.x) {
+      falling.push({
+        x: current.x, y: current.y,
+        w: last.x - current.x, h: BLOCK_H,
+        color: current.color, vy: 0,
+        rot: 0, vrot: -0.06, face: false
+      });
+    } else if (current.x + current.w > last.x + last.w) {
+      falling.push({
+        x: last.x + last.w, y: current.y,
+        w: (current.x + current.w) - (last.x + last.w), h: BLOCK_H,
+        color: current.color, vy: 0,
+        rot: 0, vrot: 0.06, face: false
+      });
+    }
+    current.x = left;
+    current.w = overlap;
+    beep(440 + score * 12, 0.06, 'sine', 0.05);
+  }
+
+  blocks.push(current);
+  score++;
+  scoreEl.textContent = score;
+
+  // camera follow
+  const topY = current.y;
+  const visibleTop = H * 0.38;
+  if (topY < visibleTop) {
+    targetCameraY = visibleTop - topY;
+  }
+
+  // game over if block too small
+  if (current.w < 8) {
+    setTimeout(endGame, 200);
+  } else {
+    spawnNext();
+  }
+}
+
+function endGame() {
+  if (state === 'gameover') return;
+  state = 'gameover';
+  finalScore.textContent = score;
+  if (score > best) {
+    best = score;
+    localStorage.setItem('lena_pp_best', best);
+    bestEl.textContent = best;
+    bestText.textContent = '★ New best!';
+  } else {
+    bestText.textContent = `Best ${best}`;
+  }
+  setTimeout(() => {
+    gameover.classList.remove('hidden');
+  }, 900);
+}
+
+// ─── update ─────────────────────────────────────────────
+function update() {
+  if (state === 'playing' && current) {
+    current.x += current.dir * current.speed;
+    if (current.dir > 0 && current.x > W) current.dir = -1;
+    else if (current.dir < 0 && current.x + current.w < 0) current.dir = 1;
+  }
+
+  cameraY += (targetCameraY - cameraY) * 0.1;
+
+  // falling pieces
+  falling.forEach(p => {
+    p.vy += 0.85;
+    p.y += p.vy;
+    p.rot += p.vrot;
+  });
+  falling = falling.filter(p => p.y < H + 400);
+
+  // perfect texts
+  perfects.forEach(p => {
+    p.y += p.vy;
+    p.alpha -= 0.025;
+  });
+  perfects = perfects.filter(p => p.alpha > 0);
+
+  // shake decay
+  if (shake > 0) shake *= 0.85;
+}
+
+// ─── drawing ────────────────────────────────────────────
+function roundRect(x, y, w, h, r) {
+  r = Math.min(r, Math.abs(w) / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+function drawPenguin(b, withFace = true) {
+  ctx.fillStyle = b.color;
+  roundRect(b.x, b.y, b.w, b.h, 6);
+  ctx.fill();
+
+  if (!withFace || b.w < 50) return;
+
+  const cx = b.x + b.w / 2;
+  const cy = b.y + b.h / 2;
+
+  // eyes (white)
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(cx - 9, cy - 2, 4, 0, Math.PI * 2);
+  ctx.arc(cx + 9, cy - 2, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // pupils
+  ctx.fillStyle = '#14140F';
+  ctx.beginPath();
+  ctx.arc(cx - 9, cy - 2, 1.8, 0, Math.PI * 2);
+  ctx.arc(cx + 9, cy - 2, 1.8, 0, Math.PI * 2);
+  ctx.fill();
+
+  // beak
+  ctx.fillStyle = '#FF8B00';
+  ctx.beginPath();
+  ctx.moveTo(cx - 3.5, cy + 4);
+  ctx.lineTo(cx + 3.5, cy + 4);
+  ctx.lineTo(cx, cy + 10);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawFalling(p) {
+  ctx.save();
+  ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
+  ctx.rotate(p.rot);
+  ctx.fillStyle = p.color;
+  roundRect(-p.w / 2, -p.h / 2, p.w, p.h, 6);
+  ctx.fill();
+  if (p.face && p.w >= 50) {
+    // mini face when whole block falls
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(-9, -2, 4, 0, Math.PI * 2);
+    ctx.arc(9, -2, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#14140F';
+    ctx.beginPath();
+    ctx.arc(-9, -2, 1.8, 0, Math.PI * 2);
+    ctx.arc(9, -2, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FF8B00';
+    ctx.beginPath();
+    ctx.moveTo(-3.5, 4);
+    ctx.lineTo(3.5, 4);
+    ctx.lineTo(0, 10);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.save();
+  // shake
+  if (shake > 0.5) {
+    ctx.translate(
+      (Math.random() - 0.5) * shake,
+      (Math.random() - 0.5) * shake
+    );
+  }
+  // camera
+  ctx.translate(0, cameraY);
+
+  // ground hint (subtle line at base)
+  if (blocks.length > 0) {
+    const base = blocks[0];
+    ctx.strokeStyle = 'rgba(20,20,15,0.12)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, base.y + base.h);
+    ctx.lineTo(W, base.y + base.h);
+    ctx.stroke();
+  }
+
+  // stacked blocks
+  blocks.forEach(b => drawPenguin(b, true));
+
+  // current moving
+  if (current && state === 'playing') {
+    drawPenguin(current, true);
+  }
+
+  // falling
+  falling.forEach(drawFalling);
+
+  // perfect texts
+  perfects.forEach(p => {
+    ctx.fillStyle = `rgba(255, 58, 31, ${p.alpha})`;
+    ctx.font = '800 22px "Bricolage Grotesque", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('PERFECT!', p.x, p.y);
+  });
+
+  ctx.restore();
+}
+
+function loop() {
+  update();
+  render();
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ─── input ──────────────────────────────────────────────
+function tap(e) {
+  // ignore taps on links
+  if (e && e.target && e.target.closest && e.target.closest('a')) return;
+  if (e) e.preventDefault();
+  drop();
+}
+
+canvas.addEventListener('pointerdown', tap);
+intro.addEventListener('pointerdown', tap);
+gameover.addEventListener('pointerdown', tap);
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'Enter') {
+    e.preventDefault();
+    drop();
+  }
+});
+</script>
+
+</body>
+</html>
